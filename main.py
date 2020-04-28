@@ -2,7 +2,7 @@
 
 import xport
 import pandas as pd 
-"""
+
 print("\n")
 # Early Childhood dataset 
 n = 0 
@@ -78,7 +78,7 @@ for value in resp_seq.values():
         
         
 print(resp_seq_vendiagram)
-"""
+
 
 # Load Early-Childhood data into dataframe
 '''
@@ -88,7 +88,7 @@ analysis, thus only these fields will be loaded in the main dataframe
 i = 0
 mylist = []
 
-##print(df)
+
 
 with open('datasets/EarlyChildhood_2017-2018_NHANES.XPT', 'rb') as f:
     for row in xport.Reader(f):
@@ -115,9 +115,9 @@ with open('datasets/EarlyChildhood_2017-2018_NHANES.XPT', 'rb') as f:
 
 
 
-df = pd.DataFrame(mylist, columns = ["RESP#", "Mother's Age When Born", "Mother Smoked When Pregnant", \
+df_ec = pd.DataFrame(mylist, columns = ["RESP#", "Mother's Age When Born", "Mother Smoked When Pregnant", \
 "Weight At Birth", "Weight More/Less than 5.5lbs", "Weight More/Less than 9.0lbs"])
-print(df)
+print(df_ec)
 
 
 # Load Blood Pressure data into dataframe
@@ -127,7 +127,6 @@ print(df)
 i = 0
 mylist = []
 
-##print(df)
 
 with open('datasets/BloodPressure_2017-2018_NHANES.XPT', 'rb') as f:
     for row in xport.Reader(f):
@@ -146,14 +145,61 @@ with open('datasets/BloodPressure_2017-2018_NHANES.XPT', 'rb') as f:
 
 
 
-print(mylist)
-"""
-columns = ["RESP#", "Arm Selected", "Coded Cuff Size", "Pulse Regular Or Irregular", "Pulse Type", "Systolic (3rd Rdg)", "Diastolic (3rd Rdg)"]
-
+##print(mylist)
 """
 
 
-##df = pd.DataFrame(mylist, columns = ["RESP#", "Mother's Age When Born", "Mother Smoked When Pregnant", \
-##"Weight At Birth", "Weight More/Less than 5.5lbs", "Weight More/Less than 9.0lbs"])
-##print(df)
+"""
+
+
+df_bp = pd.DataFrame(mylist, columns = ["RESP#", "Arm Selected", "Coded Cuff Size", \
+"Pulse Regular Or Irregular", "Pulse Type", "Systolic (3rd Rdg)", "Diastolic (3rd Rdg)"])
+print(df_bp)
+
+
+# Load Demographics data into dataframe
+'''
+ 
+'''
+i = 0
+mylist = []
+
+
+with open('datasets/Demographics_2017-2018_NHANES.XPT', 'rb') as f:
+    for row in xport.Reader(f):
+        a = list(row)
+        ##print(len(a))
+        ##print(a)
+        
+        # remove unwanted data fields for the row 
+        a = a[0:1] + a[3:5] + a[7:8] + a[10:13] + a[15:18] + a[45:46]
+        
+        ##print(a)
+        ##print(len(a))
+        mylist.append(a)
+        i += 1 
+        ##if i == 1:
+        ##    break
+
+
+
+
+##print(mylist)
+
+df_d = pd.DataFrame(mylist, columns = ["RESP#", "Gender", "Age In Years", \
+"Race", "Served in U.S. Armed Forces", "Serviced In Foreign Armed Forces", "Country Of Birth", \
+"Education Ages 6-19", "Education Ages 20+", "Marital Status", "Ratio Of HH Income To Poverty"])
+
+print(df_d)
+
+
+
+
+# Merge the datasets together 
+
+ec_bp_merge = pd.merge(left=df_ec, right=df_bp, left_on='RESP#', right_on='RESP#', how = 'inner')
+
+print(ec_bp_merge.shape)
+
+
 
