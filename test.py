@@ -1,23 +1,19 @@
-## test 
-"""
-dic = {range(0,9):'Single Digits', range(10,99): 'Double Digits'}
-#print(dic)
+import numpy as np  
+from decimal import *
 
-a = range(0,9)
-if type(a) == range:
-    print('WORKED!')
-## print(type(range(0,9)))
+##getcontext().prec = 3
+##a = getcontext()
+##setcontext(a)
 
-for key in dic:
-    if 8 in key:
-        print (dic[key])
-        break
-"""
+mealPrice = Decimal(str(4.98)).quantize(Decimal('.001'))
+print(mealPrice)
+print(type(mealPrice))
+##print(x,y,step)
 
+#a = np.arange(x,y,step)
+#print(a)
+#a = tuple(a)
+#print(a)
 
-list = [100,200,300,400,500,600] 
-
-del list[0:1]
-print(list)
-        
-        
+##a = list(a)
+##print(a)

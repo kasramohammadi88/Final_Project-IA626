@@ -13,7 +13,8 @@ INTIAL PACKAGE IMPORTATION
 import xport
 import pandas as pd 
 import re
-
+import numpy as np
+from decimal import *
 """
 ############################
 
@@ -319,7 +320,7 @@ for num,dic in enumerate(BP_codes, start = 1):
 
 BP_codes = BP_codes_new 
 
-print(BP_codes)
+##print(BP_codes)
 
 ##print(len(BP_codes))  
 """
@@ -334,7 +335,7 @@ print(BP_codes)
 
 # Collecting Coded dictionary from Demographics dataset  
 
-f = open("Datasets/BP_2017-2018_NHANES_Doc.htm", 'r')
+f = open("Datasets/D_2017-2018_NHANES_Doc.htm", 'r')
 file = f.read()
 f.close() 
 
@@ -345,7 +346,7 @@ tn = 0
 tr = 0 
 td = 0
 
-BP_codes = []  
+D_codes = []  
 table_codes = {} 
 i = 0
 # for loop to create coded dictionary 
@@ -355,7 +356,7 @@ for item in lines:
     if parse == True and '<table class="values">' in item: 
         ##print(table_codes)
         if table_codes != {}:
-            BP_codes.append(table_codes)
+            D_codes.append(table_codes)
             ##print("append worked")
             
         table_codes = {} 
@@ -393,17 +394,18 @@ for item in lines:
         
     i += 1 
 # appending the last table of codes collected from the above loop    
-BP_codes.append(table_codes)
-##print("number of collected coded dictionaries for blood pressure:", len(BP_codes))
+D_codes.append(table_codes)
+##print("\n number of collected coded dictionaries for demographics:", len(D_codes))
 ##print('\n')
 
-##print(EC_codes)
+##print("\n collected dictionaries for demographics: ", D_codes)
 i = 0 
 # replace a 'range' datatype for coded keys that are correspond to a range of values rather than
 # an exact number 
-for dic in BP_codes:
+for dic in D_codes:
     ##if i == 1:
         ##break
+        
     for key in dic.keys(): 
         ##if i == 1:
         ##    break
@@ -411,43 +413,70 @@ for dic in BP_codes:
             # spliting string where there is a numerical range involved
             a = key.split('to')
             # removing leading and trailing white spaces from the list values 
-            a = [x.strip(' ') for x in a]
+            a = [x.strip(' ') for x in a] 
             # replace the range values in the string with a 'range' datatype variable
-            num_range = range(int(a[0]), int(a[1]) + 1)
-            ##print("before:", dic)
+            ##print(
+            ##print(a[1], len(a[1]))
+            if '.' in a[0] or '.' in a[1]:
+                ##print("detecting non-integer values in: ", a)
+                if len(a[0]) == 4 or len(a[1]) == 4:
+                    ##print(float(a[1]))
+                    step = Decimal(str(0.01)).quantize(Decimal('.01'))
+                    ##print("type of step:", type(step))
+                    beg_range = Decimal(a[0]).quantize(Decimal('.01'))
+                    end_range = Decimal(a[1]).quantize(Decimal('.01'))
+                    num_range = np.arange(beg_range, end_range + step, step)
+                    # need to convert to tuple to make it 'hashable' for the dictionary key designation
+                    #print("numpy array version of range:", num_range)
+                    num_range = tuple(num_range)
+                    #print("tuple version of range:", num_range)
+                    ##print(num_range)
+                    ##print("detecting the Ratio of Family of Income poverty rate dictionary:", a)
+                else:
+                    ##print("detected non-integer value but not relevant column; skipping to next dictionary iteration:", a)
+                    continue 
+            else: 
+                num_range = range(int(a[0]), int(a[1]) + 1)
+            #print("before:", dic)
             dic[num_range] = dic[key]
             del dic[key]
-            ##print("after:", dic)
+            #print("after:", dic)
             ##print(num_range)
-            ##print(a)
+            ##print("range values:", a)
+            ##print('\n')
             ##i += 1 
-      
-      
-      
+##print(num_range)
 
-##for item in EC_codes:
+##if Decimal('4.98') in num_range:
+##    print("FOUND IT!")
+     
+
+##for item in D_codes:
 ##        print(item.keys())  
 ##        print(type(item.values()))
 
 # removing coded columns dictionaries we don't need and keeping the rest 
-
-BP_codes_new = [] 
-for num,dic in enumerate(BP_codes, start = 1):
-    if num == 3 or num == 4 or num == 6 or num == 7 or num == 15 or num == 16: 
-        BP_codes_new.append(dic)
+#print('\n')
+#print("Demographic codes: \n \n", D_codes)
+#print("number of dictionaries in old coded list: ", len(D_codes))
+D_codes_new = [] 
+for num,dic in enumerate(D_codes, start = 1):
+    if num == 3 or num == 4 or num == 7 or num == 10 or num == 11 or num == 12 or num == 15 or num == 16 or num == 17 or num == 45: 
+        D_codes_new.append(dic)
         
-##print("new coded dictionary list:\n", BP_codes_new)
-##print("number of dictionaries in new coded list: ", len(BP_codes_new))
+#print('\n')     
+#print("new coded dictionary list:\n", D_codes_new)
+#print("number of dictionaries in new coded list: ", len(D_codes_new))
   
 
-BP_codes = BP_codes_new 
+D_codes = D_codes_new 
 
-print(BP_codes)
+##print("after fixing range keys: \n", D_codes)
 
-##print(len(BP_codes))  
+##print(len(D_codes))  
 """
 
-##for num, dic in enumerate(BP_codes):
+##for num, dic in enumerate(D_codes):
     ##print('index #:', num)
     ##print('coded dictionary for index: ', dic)
     ##print('\n')
@@ -592,11 +621,11 @@ df_d = pd.DataFrame(mylist, columns = ["RESP#", "Gender", "Age In Years", \
 "Race", "Served in U.S. Armed Forces", "Serviced In Foreign Armed Forces", "Country Of Birth", \
 "Education Ages 6-19", "Education Ages 20+", "Marital Status", "Ratio Of HH Income To Poverty"])
 
-# replacing all NaN fields with '.', which will help the conversion of the numerical code values 
+# replacing all NaN fields with arbitrary string'123456789', which will help the conversion of the numerical code values 
 # downstream 
 df_d = df_d.fillna("123456789")
 
-##print(df_d)
+#print(df_d)
 
 """
 
@@ -767,7 +796,13 @@ for index, dic in enumerate(distinct_values_list, start = 1):
 ##print(df_ec)
     
 
+
+
 # Transforming Blood Pressure dataset from coded version to semantically descriptive version 
+
+
+
+
 
 # Converting coded numbers for descriptive field per collected coding semantic 
 
@@ -908,7 +943,7 @@ for col in col_names:
 ##for row_value in df_bp[col_names[col_i-1]]:
 ##    print(row_value)
 
-
+"""
 print('\n')
 print("number of changes to columns in total: ", change_num)
 print("number of range values in columns in total:", range_values)
@@ -926,6 +961,193 @@ for index, dic in enumerate(distinct_values_list, start = 1):
 
 ##print('\n')
 print("blood pressure dataframe AFTER FULL transformation process: \n", df_bp)
+"""
+
+
+
+
+
+
+
+# Transforming DEMOGRAPHICS dataset from coded version to semantically descriptive version 
+
+# Converting coded numbers for descriptive field per collected coding semantic 
+
+
+"""
+df_d = pd.DataFrame(mylist, columns = ["RESP#", "Gender", "Age In Years", \
+"Race", "Served in U.S. Armed Forces", "Serviced In Foreign Armed Forces", "Country Of Birth", \
+"Education Ages 6-19", "Education Ages 20+", "Marital Status", "Ratio Of HH Income To Poverty"])
+"""
+
+
+##print("Before transformation")
+##print(df_d)
+##print(df_d.dtypes)
+##print('\n')
+
+# change all values to 'int32' to remove decimal points off the numeric values
+df_d = df_d.astype({"RESP#":'int32', "Gender":'int32', "Age In Years":'int32', \
+"Race":'int32', "Served in U.S. Armed Forces":'int32', "Serviced In Foreign Armed Forces":'int32', \
+"Country Of Birth":'int32', "Education Ages 6-19":'int32', "Education Ages 20+":'int32', "Marital Status":'int32', \
+"Ratio Of HH Income To Poverty":'int32'})
+
+
+##print("after int32 change: \n", df_d)
+##print(df_d.dtypes)
+
+# change all values to 'str' so as to allow the replace() method to work seemlessly with the coded dictionary values 
+
+df_d = df_d.astype({"RESP#":'str', "Gender":'str', "Age In Years":'str', \
+"Race":'str', "Served in U.S. Armed Forces":'str', "Serviced In Foreign Armed Forces":'str', \
+"Country Of Birth":'str', "Education Ages 6-19":'str', "Education Ages 20+":'str', "Marital Status":'str', \
+"Ratio Of HH Income To Poverty":'str'})
+
+
+##print("after str change: \n",df_d)
+##print(df_d.dtypes)
+
+# replace assigned '123456789' values with the appropriate '.' string which will aid in the coding transformation process
+df_d = df_d.replace('123456789','.')
+
+##print("after 123456789 to . replacement:\n",df_d)
+##print(df_d)
+
+##print(df_d.dtypes)
+##print(BP_codes)
+##df_d = df_d.replace(      
+
+##for row in df_d["Mother's Age When Born"]: 
+##    print(row)
+
+
+##print(len(BP_codes))
+
+##print (df_d.iloc[:,1])
+
+change_num = 0 
+range_values = 0 
+flag = 0 
+
+flag_list = [] 
+
+# collect list of column names to reference later when cycling through different columns 
+# when transforming datafields from coded version to semantically descriptive version
+col_names  = []
+for col in df_d.columns:
+    col_names.append(col)
+# indexes of columns of interest for the Early Childhood data. This index will be used in the FOR loop below to cycle 
+# through specific columns of interest only 
+
+distinct_values_list = [] 
+#print(col_names)
+#print(type(col_names[0]))   
+
+# iteration count for the column names list 
+col_i = 0
+for col in col_names:
+    distinct_dic = {} 
+    i = 0
+    ##print('\n')
+    ##print("column iteration number starts as", col_i)
+    ##if col_i == 4:
+    ##    print("break loop when starting on column 4!")
+    ##    break
+    if col == 'RESP#':
+        ##print("skip RESP# column")
+        col_i += 1 
+        continue
+    
+    ##print('\n')
+    ##print("column name & col_i index:", col, col_i)
+    ##print("corresponding codes: ", D_codes[col_i-1])
+    ##print('\n')
+    for row_value in df_d[col]:
+        # for non-range key values in the coded dictionary
+        ##print(row_value)
+        ##if i % 500 == 0:
+            ##print(row_value, i)
+        if row_value in D_codes[col_i-1].keys():
+            ##print('\n')
+            ##print("non range row value in dataframe", df_d[col_names[col_i]][i])
+            ##print("non range key: ", row_value)
+            ##print("non range corresponding key-value in Coded dictionary: ", D_codes[col_i-1][row_value])
+            ##print(i)
+            ##print("Before non-range change: ", df_d[col_names[1]][i])
+            df_d[col_names[col_i]][i] = D_codes[col_i-1][row_value]
+            ##df_d.iloc[i:1] = BP_codes[0][row_value]
+            ##print("After non-range change: ", df_d[col_names[1]][i])
+            ##print("\n")
+            
+            ##print(df_d["Mother's Age When Born"][i])
+            ##print('\n')
+            change_num += 1 
+            if df_d[col_names[col_i]][i] in distinct_dic.keys():
+                distinct_dic[df_d[col_names[col_i]][i]] += 1 
+            else: 
+                distinct_dic[df_d[col_names[col_i]][i]] = 1 
+            
+            
+            
+            
+        # for range key values in the coded dictionary 
+        else: 
+            if df_d[col_names[col_i]][i] in distinct_dic.keys():
+                distinct_dic[df_d[col_names[col_i]][i]] += 1 
+            else: 
+                distinct_dic[df_d[col_names[col_i]][i]] = 1 
+            ##print("NOW in range mode")
+            for key in D_codes[col_i-1]:
+                ##print(type(key))
+                ##print(type(key) == range)
+                ##print(row_value in key)
+                if type(key) == range or type(key) == tuple:
+                    ##print("row value: ", row_value)
+                    ##print("Found range key:", key)
+                    if int(row_value) in key:
+                        ##print("row value identified in range key")
+                        range_values += 1 
+                    else: 
+                        flag += 1 
+                        flag_dic = {'row number':i, 'row value': row_value, 'range key': key}
+                        flag_list.append(flag_dic)
+                    ##print('\n')
+                    
+                    
+        
+        i += 1 
+    distinct_values_list.append(distinct_dic)    
+    col_i += 1 
+##print(col_names[1])
+##for row_value in df_d[col_names[1]]:
+##    print(row_value)
+
+"""
+print('\n')
+print("number of changes to columns in total: ", change_num)
+print("number of range values in columns in total:", range_values)
+print("sum total of detected and dealt with values for all columns: ", change_num + range_values)
+print("number of rows datafields for all columns: ", len(df_d)*10)
+print("number of flags raised for range values for all columns: ", flag)
+print("list of flags for range for all columns: ", flag_list)
+
+"""
+"""
+for index, dic in enumerate(distinct_values_list, start = 1):
+    print('\n')
+    print("column name & index:", col_names[index], index)
+    print('unique values:', dic)
+"""   
+    
+
+##print('\n')
+
+
+##print("demographics dataframe AFTER FULL transformation process: \n", df_d)
+
+"""
+
+"""
 
 """
 ###########################
@@ -933,18 +1155,18 @@ print("blood pressure dataframe AFTER FULL transformation process: \n", df_bp)
 MERGE THE DATASETS TOGETHER
 
 ########################### 
-
 """
+
 
 # Merge the datasets together 
 
-##ec_bp_merge = pd.merge(left=df_ec, right=df_bp, left_on='RESP#', right_on='RESP#', how = 'inner')
+ec_bp_merge = pd.merge(left=df_ec, right=df_bp, left_on='RESP#', right_on='RESP#', how = 'inner')
 
-##print(ec_bp_merge)
+print(ec_bp_merge)
 
-##ec_bp_d_merge = pd.merge(left=ec_bp_merge, right=df_d, left_on='RESP#', right_on='RESP#', how = 'inner')
+ec_bp_d_merge = pd.merge(left=ec_bp_merge, right=df_d, left_on='RESP#', right_on='RESP#', how = 'inner')
 
-#print(ec_bp_d_merge)
+print(ec_bp_d_merge)
 
 
 
