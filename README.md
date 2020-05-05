@@ -66,9 +66,13 @@ Now we have an idea of what the dataset looks like, seeing a sample row of the d
 
 ### 2. Created Coded Dictionary 
 ***
-Before loading the data and beginning data cleaning and data transformation, I decided to web-scrap the coded definition descriptions for each dataset. On the NHANES website, each dataset and its .xpt datafile is accompanied by a 'read-me' .htm file. Within this .htm file is where teh coded definition descriptions are described, contained in individual tables per each data column. We need to write a parsing code for this .htm file, to be able to extract the coded definitions into python dictionaries, that will be then used in the data transformation process in *step 4*. 
 
 *note: the codes and results shown in this section is specifically for the Early Childhood dataset only, to reduce redundancy. Since the other datasets are identical in datatype and format, the codes will all be virtually identical for each dataset, except for minor corresponding alterations 
+
+
+Before loading the data and beginning data cleaning and data transformation, I decided to web-scrap the coded definition descriptions for each dataset. On the NHANES website, each dataset and its .xpt datafile is accompanied by a 'read-me' .htm file. Within this .htm file is where teh coded definition descriptions are described, contained in individual tables per each data column. We need to write a parsing code for this .htm file, to be able to extract the coded definitions into python dictionaries, that will be then used in the data transformation process in *step 4*. 
+
+
 
 the general parsing loop used for each dataset looks like this: 
 
@@ -175,10 +179,11 @@ A similar nearly identical code is written for the Blood Pressure and Demographi
 
 ### 3. Loading Data
 ***
+*note: the codes and results shown in this section is specifically for the Early Childhood dataset only, to reduce redundancy. Since the other datasets are identical in datatype and format, the codes will all be virtually identical for each dataset, except for minor corresponding alterations 
 
 Next, we want to load the datasets into python memory. Since each dataset is relatively managable in size, we can directly load the datasets into their individual pandas dataframe without much memory usage. 
 
-*note: the codes and results shown in this section is specifically for the Early Childhood dataset only, to reduce redundancy. Since the other datasets are identical in datatype and format, the codes will all be virtually identical for each dataset, except for minor corresponding alterations 
+
 
 The code to load the dataset:
 
@@ -209,6 +214,8 @@ df_ec = df_ec.fillna("123456789")
 
 ```
 
+As can be seen in the code above, using the .pop() method, we removed some of the columns in the original datafile during the loading process for the Early Childhood dataset. This was based on personal preference, dictated by what fields seemed like interesting and/or relevant fields to ultimately perform analysis on in *section 6*. The same was done for the Blood Pressure and Demographic datasets. 
+
 printing the loaded dataframe, we get: 
 
 ```
@@ -230,9 +237,165 @@ Now that the data is loaded, we can begin to further clean and transform the dat
 
 ### 4. Transforming Data 
 ***
+*note: the codes and results shown in this section is specifically for the Early Childhood dataset only, to reduce redundancy. Since the other datasets are identical in datatype and format, the codes will all be virtually identical for each dataset, except for minor corresponding alterations 
+
+Next, we want to take the loaded up datasets, and the corresponding coded dictionaries, and transform the datasets. The transformation process will largely center around converting the original numerical coded style dataset into a semantically descriptive dataset, where the values are self-descriptive rather than coded. 
+
+Before starting make the dataset semantically descriptive, first we need to address datatype issues. Specifically, the individual dataset fields are originally 'str' types. To keep the consistency with the decimal points of some of the columns, the below code will convert the datatypes from 'str' to 'int32', and then back to 'str'. This effectively makes all the numerical values in intergers forms with no numbers after the decimal point, yet they remain a 'str' datatype: 
+
+*note: For the Demographics dataset, there is a single column that requires precision up to 2 digits past the decimal point. To deal with this sole case, the code for the Demographics dataset was slightly altered to capture this case, but otherwise is identical to the code below for the Early Childhood dataset. 
+
+```python
+
+# change all values to 'int32' to remove decimal points off the numeric values
+df_ec = df_ec.astype({"RESP#":'int32', "Mother's Age When Born":'int32', "Mother Smoked When Pregnant":'int32', \
+"Weight At Birth Lbs":'int32', "Weight At Birth Ozs":'int32', "Weight More/Less than 5.5lbs":'int32', \
+"Weight More/Less than 9.0lbs":'int32' })
+
+# change all values to 'str' so as to allow the replace() method to work seemlessly with the coded dictionary values 
+df_ec = df_ec.astype({"RESP#":'str', "Mother's Age When Born":'str', "Mother Smoked When Pregnant":'str', \
+"Weight At Birth Lbs":'str', "Weight At Birth Ozs":'str', "Weight More/Less than 5.5lbs":'str', \
+"Weight More/Less than 9.0lbs":'str'})
+
+# replace assigned 0 values with the appropriate '.' string which will aid in the coding transformation process
+df_ec = df_ec.replace('123456789','.')
+
+```
+
+the resulting dataframe is now: 
+*note how `RESP#` values are not integers with no digits past the decimal point, as opposed to its original format above*
+```
+       RESP# Mother's Age When Born  ... Weight More/Less than 5.5lbs Weight More/Less than 9.0lbs
+0      93703                     35  ...                            .                            .
+1      93704                     29  ...                            .                            .
+2      93707                     34  ...                            .                            .
+3      93710                     28  ...                            .                            .
+4      93719                     25  ...                            .                            .
+...      ...                    ...  ...                          ...                          ...
+3088  102941                     19  ...                            .                            .
+3089  102942                     24  ...                            .                            .
+3090  102945                     25  ...                            .                            .
+3091  102951                     29  ...                            .                            .
+3092  102955                     36  ...                            .                            .
+
+[3093 rows x 7 columns]
+
+```
+
+Now the dataset is ready to be transformed, as the datatype and digit precision is as we want it to be. Let's get started!
+
+Prior to our main *transformation loop*, we first want to capture the names of the columns, which will be used to reference them during the loop. In the below code, we capture the column names in the list item `col_names`: 
+
+```python
+col_names  = []
+for col in df_ec.columns:
+    col_names.append(col)
+``` 
+
+Now, for the main *transformation loop*...
+*note: within the second loop in this main `for` loop, there are `if` and `else` statements, that deal with the 1-to-1 dictionary conversion values and range conversion cases, respectively.*
+
+```python
+col_i = 0
+for col in col_names:
+    distinct_dic = {} 
+    i = 0
+    if col == 'RESP#':
+        col_i += 1 
+        continue
+    
+    for row_value in df_ec[col]:
+        # for non-range key values in the coded dictionary
+        if row_value in EC_codes[col_i-1].keys():
+            df_ec[col_names[col_i]][i] = EC_codes[col_i-1][row_value]
+            change_num += 1 
+            if df_ec[col_names[col_i]][i] in distinct_dic.keys():
+                distinct_dic[df_ec[col_names[col_i]][i]] += 1 
+            else: 
+                distinct_dic[df_ec[col_names[col_i]][i]] = 1    
+            
+        # for range key values in the coded dictionary 
+        else: 
+            if df_ec[col_names[col_i]][i] in distinct_dic.keys():
+                distinct_dic[df_ec[col_names[col_i]][i]] += 1 
+            else: 
+                distinct_dic[df_ec[col_names[col_i]][i]] = 1 
+            for key in EC_codes[col_i-1]:
+                if type(key) == range:
+                    if int(row_value) in key:
+                        range_values += 1 
+                    else: 
+                        flag += 1 
+                        flag_dic = {'row number':i, 'row value': row_value, 'range key': key}
+                        flag_list.append(flag_dic)
+        i += 1 
+    distinct_values_list.append(distinct_dic)    
+    col_i += 1 
+```
+
+
+There! Now the transformation process is complete for our individual dataframe dataset. Here is what the dataset now looks like: 
+*note: The datafield values are all now self-descriptive!*
+```
+RESP# Mother's Age When Born Mother Smoked When Pregnant Weight At Birth Lbs Weight At Birth Ozs Weight More/Less than 5.5lbs Weight More/Less than 9.0lbs
+0      93703                     35                          No                   8                  11                      Missing                      Missing
+1      93704                     29                          No                   7                   9                      Missing                      Missing
+2      93707                     34                          No                   7                   2                      Missing                      Missing
+3      93710                     28                          No                   7                  12                      Missing                      Missing
+4      93719                     25                          No                   5                   8                      Missing                      Missing
+...      ...                    ...                         ...                 ...                 ...                          ...                          ...
+3088  102941                     19                          No                   6                   0                      Missing                      Missing
+3089  102942                     24                          No                   7                   4                      Missing                      Missing
+3090  102945                     25                          No                   7                   3                      Missing                      Missing
+3091  102951                     29                         Yes                   7                   9                      Missing                      Missing
+3092  102955                     36                          No                   8                   1                      Missing                      Missing
+
+[3093 rows x 7 columns]
+
+```
+
+After having done this for all 3 datasets, we now have 3 fully transformed datasets on our hands, ready to be merged into one big table. On to the next section....
 
 ### 5. Merging Data 
 ***
+
+Now that we have the datasets transformed, cleaned up, and looking the way we want it to look, we can combine the three separate dataframes into one big giant dataframe. To do this, we do a sort of *join* process, in this case using the pandas method `pandas.merge()`. We use an *inner join* type of the `pandas.merge()` method, and we do the *inner join* on the `RESP#` fields which all datasets share in common, and which represents the person identifier number. Using *inner join* will capture all the cases where a person was surveyed for Early Childhood, Blood Pressure, AND Demographics. 
+
+The code looks like follows: 
+*note: the merge process is done in two steps, merging two datasets at a time* 
+
+```python
+
+ec_bp_merge = pd.merge(left=df_ec, right=df_bp, left_on='RESP#', right_on='RESP#', how = 'inner')
+
+print(ec_bp_merge)
+
+ec_bp_d_merge = pd.merge(left=ec_bp_merge, right=df_d, left_on='RESP#', right_on='RESP#', how = 'inner')
+
+print(ec_bp_d_merge)
+```
+
+
+Our resulting final combined dataframe now looks like the following: 
+
+```
+RESP# Mother's Age When Born Mother Smoked When Pregnant Weight At Birth Lbs  ... Education Ages 6-19 Education Ages 20+ Marital Status        Ratio Of HH Income To Poverty
+0      93703                     35                          No                   8  ...             Missing            Missing        Missing  Value greater than or equal to 5.00
+1      93704                     29                          No                   7  ...             Missing            Missing        Missing  Value greater than or equal to 5.00
+2      93707                     34                          No                   7  ...           6th grade            Missing        Missing                                    1
+3      93710                     28                          No                   7  ...             Missing            Missing        Missing                                    4
+4      93719                     25                          No                   5  ...           6th grade            Missing        Missing                                    3
+...      ...                    ...                         ...                 ...  ...                 ...                ...            ...                                  ...
+2871  102941                     19                          No                   6  ...           8th grade            Missing        Missing                                    1
+2872  102942                     24                          No                   7  ...             Missing            Missing        Missing                                    2
+2873  102945                     25                          No                   7  ...           9th grade            Missing        Missing                              Missing
+2874  102951                     29                         Yes                   7  ...             Missing            Missing        Missing                                    1
+2875  102955                     36                          No                   8  ...           8th grade            Missing        Missing                                    2
+
+[2876 rows x 23 columns]
+
+```
+We can now see all the chosen columns for each of the 3 datasets all in one table, joined by their shared `RESP#`, fully transformed from numerically coded datafields to semantically descriptive datafields. The dataset is now ready to be fully explored and played around with! On to the data analysis...
 
 ### 6. Data Analysis  
 ***
