@@ -1,4 +1,7 @@
-# FinalProject-IA626
+# Final Project
+### Class: IA626 - Big Data Processing and Cloud Services 
+### Term: Spring 2020 
+### Prof. Conlon
 ***
  
 ## General Description:
@@ -61,17 +64,125 @@ Number of D rows: 9254
 
 Now we have an idea of what the dataset looks like, seeing a sample row of the datasets, understanding the datatype (i.e. tuple), and size of each dataset. This will inform us in how to proceed down the line. 
 
-### 1. Created Coded Dictionary 
+### 2. Created Coded Dictionary 
+***
+Before loading the data and beginning data cleaning and data transformation, I decided to web-scrap the coded definition descriptions for each dataset. On the NHANES website, each dataset and its .xpt datafile is accompanied by a 'read-me' .htm file. Within this .htm file is where teh coded definition descriptions are described, contained in individual tables per each data column. We need to write a parsing code for this .htm file, to be able to extract the coded definitions into python dictionaries, that will be then used in the data transformation process in *step 4*. 
+
+*note: the codes and results shown in this section is specifically for the Early Childhood dataset, but the similar code applied to the other two will be virtually identical, except for minor corresponding alterations 
+
+the general parsing loop used for each dataset looks like this: 
+
+
+```python
+lines = file.split('\n')
+parse = False           
+
+tn = 0 
+tr = 0 
+td = 0
+
+EC_codes = []  
+table_codes = {} 
+i = 0
+# for loop to create coded dictionary 
+for item in lines: 
+    if "Codebook and Frequencies" in item: 
+        parse = True
+    if parse == True and '<table class="values">' in item: 
+        if table_codes != {}:
+            EC_codes.append(table_codes)            
+        table_codes = {} 
+        tn += 1 
+        tr = 0 
+        td = 0
+    if parse == True and '<tr>' in item: 
+        tr += 1
+    if parse == True and '<td' in item: 
+        td += 1
+    # locating the row with the value of interest
+    if '<td scope="row" class="values"' in item: 
+        key = re.split('<|>', item)[2]
+        value = re.split('<|>', lines[i+1])[2]
+        table_codes[key] = value      
+        
+    i += 1 
+# appending the last table of codes collected from the above loop    
+EC_codes.append(table_codes)
+
+```
+
+
+Printing the coded dictionary thus far...
+
+```python
+
+for item in EC_codes:
+        print(item)
+
+```
+
+...we get the following: 
+*note: each printed line reprentes the coded description dictionary for ONE data column of the dataset, in this case the Early Childhood dataset 
+```
+{'15 to 44': 'Range of Values', '14': '14 years or younger', '45': '45 years or older', '7777': 'Refused', '9999': "Don't know", '.': 'Missing'}
+{'1': 'Yes', '2': 'No', '7': 'Refused', '9': "Don't know", '.': 'Missing'}
+{'4 to 10': 'Range of Values', '3': '3 pounds or less', '11': '11 pounds or more', '7777': 'Refused', '9999': "Don't know", '.': 'Missing'}
+{'0 to 15': 'Range of Values', '7777': 'Refused', '9999': "Don't know", '.': 'Missing'}
+{'1': 'More than 5-1/2 lbs. (2500 g), or', '2': 'Less than 5-1/2 lbs. (2500 g)?', '7': 'Refused', '9': "Don't know", '.': 'Missing'}
+{'1': 'More than 9 lbs. (4100 g), or', '2': 'Less than 9 lbs. (4100 g)?', '7': 'Refused', '9': "Don't know", '.': 'Missing'}
+{'1': 'Overweight', '2': 'Underweight', '3': 'About the right weight', '7': 'Refused', '9': "Don't know", '.': 'Missing'}
+{'1': 'Yes', '2': 'No', '7': 'Refused', '9': "Don't know", '.': 'Missing'}
+{'1': 'Yes', '2': 'No', '7': 'Refused', '9': "Don't know", '.': 'Missing'}
+
+```
+Looking at the results, you can notice that some of the columns keys are ranges rather than exact values (e.g. line 1, first dictionary key). We need to transform these particular keys into a range of values, so we can easily transform the data downstream. Therefore, we process those cases in the following way: 
+
+```python
+for dic in EC_codes:
+    for key in dic.keys(): 
+        if 'to' in key:
+            # spliting string where there is a numerical range involved
+            a = key.split('to')
+            # removing leading and trailing white spaces from the list values 
+            a = [x.strip(' ') for x in a]
+            # replace the range values in the string with a 'range' datatype variable
+            num_range = range(int(a[0]), int(a[1]) + 1)
+            dic[num_range] = dic[key]
+            del dic[key]
+
+for item in EC_codes:
+        print(item)
+
+```
+
+Looking now at the resulting coded dictionary, we see the keys with the ranges have been usefully altered to 'range' datatypes:
+*note: the order of the dictionary keys has changed since we removed the old range key and replaced it with a new one. Given dictionaries are unordered datatypes, this does not make any difference for us down the line*
+
+```
+{'14': '14 years or younger', '45': '45 years or older', '7777': 'Refused', '9999': "Don't know", '.': 'Missing', range(15, 45): 'Range of Values'}
+{'1': 'Yes', '2': 'No', '7': 'Refused', '9': "Don't know", '.': 'Missing'}
+{'3': '3 pounds or less', '11': '11 pounds or more', '7777': 'Refused', '9999': "Don't know", '.': 'Missing', range(4, 11): 'Range of Values'}
+{'7777': 'Refused', '9999': "Don't know", '.': 'Missing', range(0, 16): 'Range of Values'}
+{'1': 'More than 5-1/2 lbs. (2500 g), or', '2': 'Less than 5-1/2 lbs. (2500 g)?', '7': 'Refused', '9': "Don't know", '.': 'Missing'}
+{'1': 'More than 9 lbs. (4100 g), or', '2': 'Less than 9 lbs. (4100 g)?', '7': 'Refused', '9': "Don't know", '.': 'Missing'}
+{'1': 'Overweight', '2': 'Underweight', '3': 'About the right weight', '7': 'Refused', '9': "Don't know", '.': 'Missing'}
+{'1': 'Yes', '2': 'No', '7': 'Refused', '9': "Don't know", '.': 'Missing'}
+{'1': 'Yes', '2': 'No', '7': 'Refused', '9': "Don't know", '.': 'Missing'}
+
+```
+
+A similar nearly identical code is written for the Blood Pressure and Demographics datasets as well, to produce a similar coded dictionary. We are not ready to load the data in! 
+
+### 3. Loading Data
 ***
 
-### 1. Loading Data
+
+
+### 4. Transforming Data 
 ***
 
-### 1. Transforming Data 
+### 5. Merging Data 
 ***
 
-### 1. Merging Data 
-***
-
-### 1. Data Analysis  
+### 6. Data Analysis  
 ***
