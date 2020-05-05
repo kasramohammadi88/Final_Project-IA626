@@ -126,7 +126,9 @@ for item in EC_codes:
 ```
 
 ...we get the following: 
-*note: each printed line reprentes the coded description dictionary for ONE data column of the dataset, in this case the Early Childhood dataset 
+
+*note: each printed line reprentes the coded description dictionary for ONE data column of the dataset, in this case the Early Childhood dataset*
+
 ```
 {'15 to 44': 'Range of Values', '14': '14 years or younger', '45': '45 years or older', '7777': 'Refused', '9999': "Don't know", '.': 'Missing'}
 {'1': 'Yes', '2': 'No', '7': 'Refused', '9': "Don't know", '.': 'Missing'}
@@ -160,6 +162,7 @@ for item in EC_codes:
 ```
 
 Looking now at the resulting coded dictionary, we see the keys with the ranges have been usefully altered to 'range' datatypes:
+
 *note: the order of the dictionary keys has changed since we removed the old range key and replaced it with a new one. Given dictionaries are unordered datatypes, this does not make any difference for us down the line*
 
 ```
@@ -243,7 +246,7 @@ Next, we want to take the loaded up datasets, and the corresponding coded dictio
 
 Before starting make the dataset semantically descriptive, first we need to address datatype issues. Specifically, the individual dataset fields are originally 'str' types. To keep the consistency with the decimal points of some of the columns, the below code will convert the datatypes from 'str' to 'int32', and then back to 'str'. This effectively makes all the numerical values in intergers forms with no numbers after the decimal point, yet they remain a 'str' datatype: 
 
-*note: For the Demographics dataset, there is a single column that requires precision up to 2 digits past the decimal point. To deal with this sole case, the code for the Demographics dataset was slightly altered to capture this case, but otherwise is identical to the code below for the Early Childhood dataset. 
+*note: For the Demographics dataset, there is a single column that requires precision up to 2 digits past the decimal point. To deal with this sole case, the code for the Demographics dataset was slightly altered to capture this case, but otherwise is identical to the code below for the Early Childhood dataset.*
 
 ```python
 
@@ -263,6 +266,7 @@ df_ec = df_ec.replace('123456789','.')
 ```
 
 the resulting dataframe is now: 
+
 *note how `RESP#` values are not integers with no digits past the decimal point, as opposed to its original format above*
 ```
        RESP# Mother's Age When Born  ... Weight More/Less than 5.5lbs Weight More/Less than 9.0lbs
@@ -293,6 +297,7 @@ for col in df_ec.columns:
 ``` 
 
 Now, for the main *transformation loop*...
+
 *note: within the second loop in this main `for` loop, there are `if` and `else` statements, that deal with the 1-to-1 dictionary conversion values and range conversion cases, respectively.*
 
 ```python
@@ -335,7 +340,9 @@ for col in col_names:
 
 
 There! Now the transformation process is complete for our individual dataframe dataset. Here is what the dataset now looks like: 
+
 *note: The datafield values are all now self-descriptive!*
+
 ```
 RESP# Mother's Age When Born Mother Smoked When Pregnant Weight At Birth Lbs Weight At Birth Ozs Weight More/Less than 5.5lbs Weight More/Less than 9.0lbs
 0      93703                     35                          No                   8                  11                      Missing                      Missing
@@ -362,6 +369,7 @@ After having done this for all 3 datasets, we now have 3 fully transformed datas
 Now that we have the datasets transformed, cleaned up, and looking the way we want it to look, we can combine the three separate dataframes into one big giant dataframe. To do this, we do a sort of *join* process, in this case using the pandas method `pandas.merge()`. We use an *inner join* type of the `pandas.merge()` method, and we do the *inner join* on the `RESP#` fields which all datasets share in common, and which represents the person identifier number. Using *inner join* will capture all the cases where a person was surveyed for Early Childhood, Blood Pressure, AND Demographics. 
 
 The code looks like follows: 
+
 *note: the merge process is done in two steps, merging two datasets at a time* 
 
 ```python
