@@ -16,7 +16,7 @@ To tackle this coding problem, I've divided the coding efforts into broad sectio
 
 1. **Data Exploration**  
 > Pre-liminary exploration of data attributes such as size, type, distinct values, etc. 
-2. **Creating Coded Dictionaries **
+2. **Creating Coded Dictionaries**
 > The datasets from NHANES contain numerically coded datafields. In order to have the datafields be self-descriptive, a coded dictionary for each dataset is web-scraped from the corresponding .htm file of each dataset, and then used *section 4* to transform the dataset to a semantically descriptive version 
 3. **Loading Data**
 > Loading the data from its orginal source to a pandas dataframe, to be able to begin doing work on it 
@@ -67,7 +67,7 @@ Now we have an idea of what the dataset looks like, seeing a sample row of the d
 ### 2. Created Coded Dictionary 
 ***
 
-*note: the codes and results shown in this section is specifically for the Early Childhood dataset only, to reduce redundancy. Since the other datasets are identical in datatype and format, the codes will all be virtually identical for each dataset, except for minor corresponding alterations 
+*note: the codes and results shown in this section is specifically for the Early Childhood dataset only, to reduce redundancy. Since the other datasets are identical in datatype and format, the codes will all be virtually identical for each dataset, except for minor corresponding alterations*
 
 
 Before loading the data and beginning data cleaning and data transformation, I decided to web-scrap the coded definition descriptions for each dataset. On the NHANES website, each dataset and its .xpt datafile is accompanied by a 'read-me' .htm file. Within this .htm file is where teh coded definition descriptions are described, contained in individual tables per each data column. We need to write a parsing code for this .htm file, to be able to extract the coded definitions into python dictionaries, that will be then used in the data transformation process in *step 4*. 
@@ -179,7 +179,7 @@ A similar nearly identical code is written for the Blood Pressure and Demographi
 
 ### 3. Loading Data
 ***
-*note: the codes and results shown in this section is specifically for the Early Childhood dataset only, to reduce redundancy. Since the other datasets are identical in datatype and format, the codes will all be virtually identical for each dataset, except for minor corresponding alterations 
+*note: the codes and results shown in this section is specifically for the Early Childhood dataset only, to reduce redundancy. Since the other datasets are identical in datatype and format, the codes will all be virtually identical for each dataset, except for minor corresponding alterations* 
 
 Next, we want to load the datasets into python memory. Since each dataset is relatively managable in size, we can directly load the datasets into their individual pandas dataframe without much memory usage. 
 
@@ -237,7 +237,7 @@ Now that the data is loaded, we can begin to further clean and transform the dat
 
 ### 4. Transforming Data 
 ***
-*note: the codes and results shown in this section is specifically for the Early Childhood dataset only, to reduce redundancy. Since the other datasets are identical in datatype and format, the codes will all be virtually identical for each dataset, except for minor corresponding alterations 
+*note: the codes and results shown in this section is specifically for the Early Childhood dataset only, to reduce redundancy. Since the other datasets are identical in datatype and format, the codes will all be virtually identical for each dataset, except for minor corresponding alterations*
 
 Next, we want to take the loaded up datasets, and the corresponding coded dictionaries, and transform the datasets. The transformation process will largely center around converting the original numerical coded style dataset into a semantically descriptive dataset, where the values are self-descriptive rather than coded. 
 
