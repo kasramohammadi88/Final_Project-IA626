@@ -62,13 +62,13 @@ Number of D columns: 46
 Number of D rows: 9254
 ```
 
-Now we have an idea of what the dataset looks like, seeing a sample row of the datasets, understanding the datatype (i.e. tuple), and size of each dataset. This will inform us in how to proceed down the line. 
+Now we have an idea of what the dataset looks like, seeing a sample row of the datasets, understanding the datatype (i.e. tuple), and size of each dataset. This will inform us in how to proceed down the line. We can see that the size of the datasets is relatively small, looking at the rows and columns of each dataset. This fact will allow us to load the data into memory down stream, without much slowing down of our code. 
 
 ### 2. Created Coded Dictionary 
 ***
 Before loading the data and beginning data cleaning and data transformation, I decided to web-scrap the coded definition descriptions for each dataset. On the NHANES website, each dataset and its .xpt datafile is accompanied by a 'read-me' .htm file. Within this .htm file is where teh coded definition descriptions are described, contained in individual tables per each data column. We need to write a parsing code for this .htm file, to be able to extract the coded definitions into python dictionaries, that will be then used in the data transformation process in *step 4*. 
 
-*note: the codes and results shown in this section is specifically for the Early Childhood dataset, but the similar code applied to the other two will be virtually identical, except for minor corresponding alterations 
+*note: the codes and results shown in this section is specifically for the Early Childhood dataset only, to reduce redundancy. Since the other datasets are identical in datatype and format, the codes will all be virtually identical for each dataset, except for minor corresponding alterations 
 
 the general parsing loop used for each dataset looks like this: 
 
@@ -171,12 +171,62 @@ Looking now at the resulting coded dictionary, we see the keys with the ranges h
 
 ```
 
-A similar nearly identical code is written for the Blood Pressure and Demographics datasets as well, to produce a similar coded dictionary. We are not ready to load the data in! 
+A similar nearly identical code is written for the Blood Pressure and Demographics datasets as well, to produce a similar coded dictionary. We are now ready to load the data in! 
 
 ### 3. Loading Data
 ***
 
+Next, we want to load the datasets into python memory. Since each dataset is relatively managable in size, we can directly load the datasets into their individual pandas dataframe without much memory usage. 
 
+*note: the codes and results shown in this section is specifically for the Early Childhood dataset only, to reduce redundancy. Since the other datasets are identical in datatype and format, the codes will all be virtually identical for each dataset, except for minor corresponding alterations 
+
+The code to load the dataset:
+
+```python
+
+# Load Early-Childhood data into dataframe
+
+i = 0
+mylist = []
+
+with open('datasets/EarlyChildhood_2017-2018_NHANES.XPT', 'rb') as f:
+    for row in xport.Reader(f):
+        a = list(row)
+        # remove unwanted data fields for the row 
+        a.pop()
+        a.pop()
+        a.pop()
+        mylist.append(a)
+        i += 1
+
+df_ec = pd.DataFrame(mylist, columns = ["RESP#", "Mother's Age When Born", "Mother Smoked When Pregnant", \
+"Weight At Birth Lbs", "Weight At Birth Ozs", "Weight More/Less than 5.5lbs", "Weight More/Less than 9.0lbs"])
+##print(df_ec)
+
+# replacing all NaN fields with '.', which will help the conversion of the numerical code values 
+# downstream 
+df_ec = df_ec.fillna("123456789")
+
+```
+
+printing the loaded dataframe, we get: 
+
+```
+RESP# Mother's Age When Born Mother Smoked When Pregnant Weight At Birth Lbs Weight At Birth Ozs Weight More/Less than 5.5lbs Weight More/Less than 9.0lbs
+0      93703.0                     35                           2                   8                  11                    123456789                    123456789
+1      93704.0                     29                           2                   7                   9                    123456789                    123456789
+2      93707.0                     34                           2                   7                   2                    123456789                    123456789
+3      93710.0                     28                           2                   7                  12                    123456789                    123456789
+4      93719.0                     25                           2                   5                   8                    123456789                    123456789
+...        ...                    ...                         ...                 ...                 ...                          ...                          ...
+3088  102941.0                     19                           2                   6                   0                    123456789                    123456789
+3089  102942.0                     24                           2                   7                   4                    123456789                    123456789
+3090  102945.0                     25                           2                   7                   3                    123456789                    123456789
+3091  102951.0                     29                           1                   7                   9                    123456789                    123456789
+3092  102955.0                     36                           2                   8                   1                    123456789                    123456789
+```
+
+Now that the data is loaded, we can begin to further clean and transform the data accordingly. On to the next step...
 
 ### 4. Transforming Data 
 ***
