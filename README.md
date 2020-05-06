@@ -407,3 +407,11 @@ We can now see all the chosen columns for each of the 3 datasets all in one tabl
 
 ### 6. Data Analysis  
 ***
+
+Now that we have the data explored, loaded, cleaned up, and transformed, it is ready for analysis. I've done some preliminary analysis on the data, exploring the data through scatter plots and histograms. 
+
+![Title](images/map.png)
+
+
+Due to time constraints, further and deeper analysis has yet to be done. 
+
