@@ -410,8 +410,22 @@ We can now see all the chosen columns for each of the 3 datasets all in one tabl
 
 Now that we have the data explored, loaded, cleaned up, and transformed, it is ready for analysis. I've done some preliminary analysis on the data, exploring the data through scatter plots and histograms. 
 
-![Title](images/Gender_Histogram.png)
+*note: the histogram of the Gender column shows a near even amount of participants between male and females.*
+![Gender Histogram](images/Gender_Histogram.png)
 
 
-Due to time constraints, further and deeper analysis has yet to be done. 
+*note: with the scatter plot of these two variables, we don't see much correlation between the age of the patient's mother when they born, and their cuff size for the blood pressure readings. However, due to only 30 datapoints between non-missing, it would be interesting to collect more data points here to see if there a correlation that develops over larger datasets
+![Coded Cuff Size vs. Mother's Age When Born](images/MAWB_CCS.png)
+
+
+
+Due to time constraints, further and deeper analysis has yet to be done. However, much remains to be explored from this dataset. Further questions to be had for analysis on this data may include: 
+
+ - Whether larger and more complete datasets can illustrate a correlation between the age of the patient's mother when they born, and their cuff size for the blood pressure readings
+ - Exploring whether the `Arm Selected` and `Pulse Regular or Irregular` datasets have a correlation
+ - Exploring the statistical correlation strength between race, gender, age, and country of birth on the various blood pressure variables in the dataset
+ 
+ 
+ 
+May the work continue... 
 
