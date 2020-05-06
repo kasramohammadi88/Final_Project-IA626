@@ -24,7 +24,7 @@ PRELIMINARY DATA EXPLORATION
 ############################
 """
 
-"""
+
 
 print("\n")
 # Early Childhood dataset 
@@ -102,7 +102,7 @@ print("\n")
         
         
 ##print(resp_seq_vendiagram)
-"""
+
 """
 ############################
 
@@ -1167,39 +1167,14 @@ ec_bp_merge = pd.merge(left=df_ec, right=df_bp, left_on='RESP#', right_on='RESP#
 
 ec_bp_d_merge = pd.merge(left=ec_bp_merge, right=df_d, left_on='RESP#', right_on='RESP#', how = 'inner')
 
-#print(ec_bp_d_merge)
+print(ec_bp_d_merge)
 
 
-two_dimension_array = {} 
 
-for index, row in enumerate(ec_bp_d_merge["Mother's Age When Born"]): 
-    # if it is an acceptable data row
-    if (row != 'Refused' and row != "Don't know" and row != "Missing" and row != '45 years or older' and row !=  '14 years or younger') and ec_bp_d_merge["Coded Cuff Size"][index] != 'Missing':
-        # see if it is an integer acceptable value 
-        try:
-            a = int(row)
-            two_dimension_array[a] = ec_bp_d_merge["Coded Cuff Size"][index]
-            ##print("Integer accepted row:", row)
-        except:
-            
-            two_dimension_array[row] = ec_bp_d_merge["Coded Cuff Size"][index]
-            ##print("Not accepted integer row", row)
     
     
     
-sorted_array = {} 
 
-
-labels = ['Child (9X17)', 'Adult (12X22)', 'Large (15X32)', 'Thigh (18X35)'] 
-
-
-for label in labels: 
-    for key in two_dimension_array.keys():
-        if two_dimension_array[key] == label:
-            sorted_array[key] = label
-
-print(sorted_array)
-print(len(sorted_array))
 
 ##print(two_dimension_array)
 ##print(len(two_dimension_array))
@@ -1221,13 +1196,45 @@ DATA ANALYSIS
 ########################### 
 """
 
+two_dimension_array = {} 
+
+for index, row in enumerate(ec_bp_d_merge["Mother's Age When Born"]): 
+    # if it is an acceptable data row
+    if (row != 'Refused' and row != "Don't know" and row != "Missing" and row != '45 years or older' and row !=  '14 years or younger') and ec_bp_d_merge["Coded Cuff Size"][index] != 'Missing':
+        # see if it is an integer acceptable value 
+        try:
+            a = int(row)
+            two_dimension_array[a] = ec_bp_d_merge["Coded Cuff Size"][index]
+            ##print("Integer accepted row:", row)
+        except:
+            
+            two_dimension_array[row] = ec_bp_d_merge["Coded Cuff Size"][index]
+            ##print("Not accepted integer row", row)
+
+sorted_array = {} 
+
+
+labels = ['Child (9X17)', 'Adult (12X22)', 'Large (15X32)', 'Thigh (18X35)'] 
+
+
+for label in labels: 
+    for key in two_dimension_array.keys():
+        if two_dimension_array[key] == label:
+            sorted_array[key] = label
+
+##print(sorted_array)
+##print(len(sorted_array))
+
 fig, ax = plt.subplots()
     
 ##ax.scatter(ec_bp_d_merge['Served in U.S. Armed Forces'], ec_bp_d_merge['Pulse Regular Or Irregular'])
 
-##ax.hist(ec_bp_d_merge['Gender'])
-##plt.show()
+ax.hist(ec_bp_d_merge['Gender'])
+plt.show
 
+fig, ax = plt.subplots()
+    
+    
 ax.scatter(sorted_array.keys(), sorted_array.values())
 plt.show()
 
