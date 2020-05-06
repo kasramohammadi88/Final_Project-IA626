@@ -1167,7 +1167,32 @@ ec_bp_merge = pd.merge(left=df_ec, right=df_bp, left_on='RESP#', right_on='RESP#
 
 ec_bp_d_merge = pd.merge(left=ec_bp_merge, right=df_d, left_on='RESP#', right_on='RESP#', how = 'inner')
 
-##print(ec_bp_d_merge)
+#print(ec_bp_d_merge)
+
+
+two_dimension_array = {} 
+
+for index, row in enumerate(ec_bp_d_merge["Mother's Age When Born"]): 
+    # if it is an acceptable data row
+    if (row != 'Refused' and row != "Don't know" and row != "Missing" and row != '45 years or older' and row !=  '14 years or younger') and ec_bp_d_merge["Coded Cuff Size"][index] != 'Missing':
+        # see if it is an integer acceptable value 
+        try:
+            a = int(row)
+            two_dimension_array[a] = ec_bp_d_merge["Coded Cuff Size"][index]
+            ##print("Integer accepted row:", row)
+        except:
+            
+            two_dimension_array[row] = ec_bp_d_merge["Coded Cuff Size"][index]
+            ##print("Not accepted integer row", row)
+    
+
+
+
+print(two_dimension_array)
+print(len(two_dimension_array))
+    ##print(row)
+    ##print(index)
+
 
 
 ##for row in ec_bp_d_merge["Served in U.S. Armed Forces"]:
@@ -1190,7 +1215,7 @@ fig, ax = plt.subplots()
 ##ax.hist(ec_bp_d_merge['Gender'])
 ##plt.show()
 
-ax.scatter(ec_bp_d_merge["Mother's Age When Born"], ec_bp_d_merge['Coded Cuff Size'])
+ax.scatter(two_dimension_array.keys(), two_dimension_array.values())
 plt.show()
 
 
