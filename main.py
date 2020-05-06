@@ -15,6 +15,7 @@ import pandas as pd
 import re
 import numpy as np
 from decimal import *
+import matplotlib.pyplot as plt
 """
 ############################
 
@@ -23,8 +24,8 @@ PRELIMINARY DATA EXPLORATION
 ############################
 """
 
-
 """
+
 print("\n")
 # Early Childhood dataset 
 n = 0 
@@ -36,8 +37,8 @@ with open('datasets/EarlyChildhood_2017-2018_NHANES.XPT', 'rb') as f:
             print("type of each EC row:", type(row))
             print("Number of EC columns:", len(row))
             
-        if row[0] not in resp_seq.keys():
-            resp_seq[row[0]] = "EC" 
+        ##if row[0] not in resp_seq.keys():
+        ##    resp_seq[row[0]] = "EC" 
         
         n += 1 
 ##print(resp_seq)
@@ -52,10 +53,10 @@ with open('datasets/BloodPressure_2017-2018_NHANES.XPT', 'rb') as f:
             print("Sample BP data row: ", row)
             print("type of each BP row:", type(row))
             print("Number of BP columns:", len(row))
-        if row[0] not in resp_seq.keys():
-            resp_seq[row[0]] = "B"  
-        else: 
-            resp_seq[row[0]] = "B+EC" 
+        ##if row[0] not in resp_seq.keys():
+        ##    resp_seq[row[0]] = "B"  
+        ##else: 
+        ##    resp_seq[row[0]] = "B+EC" 
         
         n += 1 
      
@@ -77,34 +78,32 @@ with open('datasets/Demographics_2017-2018_NHANES.XPT', 'rb') as f:
             print("Number of D columns:", len(row))
         n += 1 
         
-        if row[0] not in resp_seq.keys():
-            resp_seq[row[0]] = "D"  
-        if row[0] in resp_seq.keys(): 
-            if resp_seq[row[0]] == "B": 
-                resp_seq[row[0]] = "B+D"
-            if resp_seq[row[0]] == "B+EC": 
-                resp_seq[row[0]] = "B+D+EC"    
-            if resp_seq[row[0]] == "EC": 
-                resp_seq[row[0]] = "D+EC"
+        ##if row[0] not in resp_seq.keys():
+        ##    resp_seq[row[0]] = "D"  
+        ##if row[0] in resp_seq.keys(): 
+        ##   if resp_seq[row[0]] == "B": 
+        ##        resp_seq[row[0]] = "B+D"
+        ##    if resp_seq[row[0]] == "B+EC": 
+        ##        resp_seq[row[0]] = "B+D+EC"    
+        ##    if resp_seq[row[0]] == "EC": 
+        ##        resp_seq[row[0]] = "D+EC"
                 
 print("Number of D rows:", n)
 
 print("\n")
-print(len(resp_seq))
+##print(len(resp_seq))
 
 
-resp_seq_vendiagram = {"B":0,"EC":0, "D":0,"B+D":0,"B+EC":0, "D+EC":0, "B+D+EC":0} 
+##resp_seq_vendiagram = {"B":0,"EC":0, "D":0,"B+D":0,"B+EC":0, "D+EC":0, "B+D+EC":0} 
 
-for value in resp_seq.values(): 
+##for value in resp_seq.values(): 
     #print(value)
-    resp_seq_vendiagram[value] += 1 
+    ##resp_seq_vendiagram[value] += 1 
         
         
-print(resp_seq_vendiagram)
+##print(resp_seq_vendiagram)
 """
-
 """
-
 ############################
 
 COLLECTING CODED DICTIONARIES
@@ -178,6 +177,9 @@ EC_codes.append(table_codes)
 ##print(len(EC_codes))
 
 ##print(EC_codes)
+
+##for item in EC_codes:
+##        print(item)
 i = 0 
 # replace a 'range' datatype for coded keys that are correspond to a range of values rather than
 # an exact number 
@@ -206,8 +208,7 @@ for dic in EC_codes:
       
 
 ##for item in EC_codes:
-##        print(item.keys())  
-##        print(type(item.values()))
+##        print(item)
 
 
 # Collecting Coded dictionary from Blood Pressure dataset  
@@ -542,7 +543,7 @@ df_ec = pd.DataFrame(mylist, columns = ["RESP#", "Mother's Age When Born", "Moth
 # downstream 
 df_ec = df_ec.fillna("123456789")
 
-
+##print(df_ec)
 
 
 
@@ -1132,13 +1133,13 @@ print("number of flags raised for range values for all columns: ", flag)
 print("list of flags for range for all columns: ", flag_list)
 
 """
-"""
-for index, dic in enumerate(distinct_values_list, start = 1):
-    print('\n')
-    print("column name & index:", col_names[index], index)
-    print('unique values:', dic)
-"""   
-    
+
+##for index, dic in enumerate(distinct_values_list, start = 1):
+##    print('\n')
+##    print("column name & index:", col_names[index], index)
+##    print('unique values:', dic)
+  
+
 
 ##print('\n')
 
@@ -1162,26 +1163,35 @@ MERGE THE DATASETS TOGETHER
 
 ec_bp_merge = pd.merge(left=df_ec, right=df_bp, left_on='RESP#', right_on='RESP#', how = 'inner')
 
-print(ec_bp_merge)
+##print(ec_bp_merge)
 
 ec_bp_d_merge = pd.merge(left=ec_bp_merge, right=df_d, left_on='RESP#', right_on='RESP#', how = 'inner')
 
-print(ec_bp_d_merge)
+##print(ec_bp_d_merge)
 
 
+##for row in ec_bp_d_merge["Served in U.S. Armed Forces"]:
+##    print(row)
+##    print("column name & index:", col_names[index], index)
+##    print('unique values:', dic)
 
+"""
+###########################
 
+DATA ANALYSIS 
 
+########################### 
+"""
 
+fig, ax = plt.subplots()
     
-    
+##ax.scatter(ec_bp_d_merge['Served in U.S. Armed Forces'], ec_bp_d_merge['Pulse Regular Or Irregular'])
 
+##ax.hist(ec_bp_d_merge['Gender'])
+##plt.show()
 
-
-
-
-
-
+ax.scatter(ec_bp_d_merge["Mother's Age When Born"], ec_bp_d_merge['Coded Cuff Size'])
+plt.show()
 
 
 
