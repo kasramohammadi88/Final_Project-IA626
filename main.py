@@ -1185,11 +1185,24 @@ for index, row in enumerate(ec_bp_d_merge["Mother's Age When Born"]):
             two_dimension_array[row] = ec_bp_d_merge["Coded Cuff Size"][index]
             ##print("Not accepted integer row", row)
     
+    
+    
+sorted_array = {} 
 
 
+labels = ['Child (9X17)', 'Adult (12X22)', 'Large (15X32)', 'Thigh (18X35)'] 
 
-print(two_dimension_array)
-print(len(two_dimension_array))
+
+for label in labels: 
+    for key in two_dimension_array.keys():
+        if two_dimension_array[key] == label:
+            sorted_array[key] = label
+
+print(sorted_array)
+print(len(sorted_array))
+
+##print(two_dimension_array)
+##print(len(two_dimension_array))
     ##print(row)
     ##print(index)
 
@@ -1215,7 +1228,7 @@ fig, ax = plt.subplots()
 ##ax.hist(ec_bp_d_merge['Gender'])
 ##plt.show()
 
-ax.scatter(two_dimension_array.keys(), two_dimension_array.values())
+ax.scatter(sorted_array.keys(), sorted_array.values())
 plt.show()
 
 
